@@ -5,21 +5,18 @@ import App from './App';
 
 console.log("🚀 Neural Protocol Entry Point reached.");
 
-// Global error logger for mobile debugging
-window.onerror = (msg, url, lineNo, columnNo, error) => {
-  const errorMsg = `Error: ${msg}\nLine: ${lineNo}\nCol: ${columnNo}`;
-  console.error(errorMsg, error);
-  const root = document.getElementById('root');
-  if (root && root.innerHTML === '') {
-    root.innerHTML = `<div style="padding: 40px; color: #ef4444; font-family: monospace; font-size: 12px; text-align: center;">LOAD_ERROR: ${msg}</div>`;
+// Suppress known non-fatal Gun.js redirect warnings to prevent UI blocking
+const originalWarn = console.warn;
+console.warn = (...args) => {
+  if (args[0] && typeof args[0] === 'string' && args[0].includes('HTTPS needed')) {
+    console.log("Handled: Gun.js HTTPS detection warning bypassed.");
+    return;
   }
-  return false;
+  originalWarn.apply(console, args);
 };
 
 const rootElement = document.getElementById('root');
-if (!rootElement) {
-  console.error("Critical Failure: Root element not found.");
-} else {
+if (rootElement) {
   try {
     const root = ReactDOM.createRoot(rootElement);
     root.render(
@@ -30,6 +27,6 @@ if (!rootElement) {
     console.log("✅ React Root Rendered Successfully.");
   } catch (err) {
     console.error("Mounting Error:", err);
-    rootElement.innerHTML = `<div style="padding: 40px; color: #ef4444; font-family: monospace; font-size: 12px;">CRITICAL_MOUNT_FAILURE: ${err}</div>`;
+    rootElement.innerHTML = `<div style="padding: 40px; color: #6366f1; font-family: monospace; font-size: 10px; text-align: center;">BOOT_LOAD_FAILURE: ${err}</div>`;
   }
 }

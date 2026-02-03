@@ -17,21 +17,37 @@ const App: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [lobby, setLobby] = useState<LobbyType>('Class');
   const [gunInstance, setGunInstance] = useState<any>(null);
+  const [initError, setInitError] = useState<string | null>(null);
 
   useEffect(() => {
+    let gun: any;
     try {
-      console.log("Initializing Gun Protocol...");
-      const gun = Gun({ peers: GUN_PEERS });
+      console.log("Initializing Gun Secure Protocol...");
+      
+      // Initialize Gun with explicit peer set
+      gun = Gun({ 
+        peers: GUN_PEERS,
+        localStorage: true,
+        radisk: false // Disable radisk on mobile to improve stability
+      });
+      
       setGunInstance(gun);
       
+      // Safe user check
       const gunUser = gun.user();
-      if (gunUser.is) {
+      if (gunUser && gunUser.is) {
         setUser(gunUser);
       }
+      
       console.log("Gun Protocol Online.");
     } catch (e) {
       console.error("Failed to initialize Gun:", e);
+      setInitError(String(e));
     }
+
+    return () => {
+      // Cleanup if needed
+    };
   }, []);
 
   const handleUnlock = () => {
@@ -47,16 +63,25 @@ const App: React.FC = () => {
   const handleLogout = () => {
     if (gunInstance) {
       const gunUser = gunInstance.user();
-      gunUser.leave();
+      if (gunUser && gunUser.leave) gunUser.leave();
     }
     setUser(null);
     setView('calculator');
   };
 
+  if (initError) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-slate-950 text-slate-500">
+        <div className="mono text-[10px] uppercase mb-2">Protocol_Initialization_Error</div>
+        <div className="mono text-[8px] opacity-50 break-all max-w-xs text-center">{initError}</div>
+      </div>
+    );
+  }
+
   if (!gunInstance) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center p-4 bg-slate-950 text-slate-200">
-        <div className="mono text-[10px] animate-pulse">CONNECTING_TO_MESH...</div>
+        <div className="mono text-[10px] animate-pulse">CONNECTING_TO_NODES...</div>
       </div>
     );
   }
