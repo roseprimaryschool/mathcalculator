@@ -1,0 +1,7 @@
+{
+  "name": "MathPro Ultra",
+  "description": "A fully functional, high-performance scientific calculator for advanced mathematics and engineering.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
