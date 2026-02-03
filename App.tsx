@@ -16,15 +16,23 @@ const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('calculator');
   const [user, setUser] = useState<any>(null);
   const [lobby, setLobby] = useState<LobbyType>('Class');
-  const [gunInstance] = useState(() => Gun({ peers: GUN_PEERS }));
+  const [gunInstance, setGunInstance] = useState<any>(null);
 
   useEffect(() => {
-    const gunUser = gunInstance.user();
-    // Check if user is already logged in
-    if (gunUser.is) {
-      setUser(gunUser);
+    try {
+      console.log("Initializing Gun Protocol...");
+      const gun = Gun({ peers: GUN_PEERS });
+      setGunInstance(gun);
+      
+      const gunUser = gun.user();
+      if (gunUser.is) {
+        setUser(gunUser);
+      }
+      console.log("Gun Protocol Online.");
+    } catch (e) {
+      console.error("Failed to initialize Gun:", e);
     }
-  }, [gunInstance]);
+  }, []);
 
   const handleUnlock = () => {
     setView('auth');
@@ -37,11 +45,21 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-    const gunUser = gunInstance.user();
-    gunUser.leave();
+    if (gunInstance) {
+      const gunUser = gunInstance.user();
+      gunUser.leave();
+    }
     setUser(null);
     setView('calculator');
   };
+
+  if (!gunInstance) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center p-4 bg-slate-950 text-slate-200">
+        <div className="mono text-[10px] animate-pulse">CONNECTING_TO_MESH...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-slate-950 text-slate-200">

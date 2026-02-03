@@ -3,27 +3,33 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-console.log("MathPro Ultra: Initializing Neural Protocol...");
+console.log("🚀 Neural Protocol Entry Point reached.");
 
 // Global error logger for mobile debugging
 window.onerror = (msg, url, lineNo, columnNo, error) => {
-  console.error('Runtime Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError object: ' + JSON.stringify(error));
+  const errorMsg = `Error: ${msg}\nLine: ${lineNo}\nCol: ${columnNo}`;
+  console.error(errorMsg, error);
+  const root = document.getElementById('root');
+  if (root && root.innerHTML === '') {
+    root.innerHTML = `<div style="padding: 40px; color: #ef4444; font-family: monospace; font-size: 12px; text-align: center;">LOAD_ERROR: ${msg}</div>`;
+  }
   return false;
 };
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
-  throw new Error("Could not find root element to mount to");
-}
-
-try {
-  const root = ReactDOM.createRoot(rootElement);
-  root.render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
-} catch (err) {
-  console.error("React Mounting Error:", err);
-  rootElement.innerHTML = `<div style="padding: 20px; color: #ef4444; font-family: monospace; font-size: 12px;">CRITICAL_MOUNT_FAILURE: ${err}</div>`;
+  console.error("Critical Failure: Root element not found.");
+} else {
+  try {
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+    console.log("✅ React Root Rendered Successfully.");
+  } catch (err) {
+    console.error("Mounting Error:", err);
+    rootElement.innerHTML = `<div style="padding: 40px; color: #ef4444; font-family: monospace; font-size: 12px;">CRITICAL_MOUNT_FAILURE: ${err}</div>`;
+  }
 }

@@ -52,13 +52,18 @@
             letter-spacing: 0.2em;
             text-transform: uppercase;
             opacity: 0.5;
+            text-align: center;
+            width: 100%;
         }
     </style>
-    <script>
-        // Polyfill global for Gun.js compatibility on Mobile Safari / iPad
-        if (typeof global === 'undefined') {
-            window.global = window;
-        }
+    <script type="module">
+        // Polyfills for Gun.js SEA compatibility on Mobile Safari/iPad
+        import { Buffer } from 'https://esm.sh/buffer@6.0.3';
+        window.Buffer = Buffer;
+        window.global = window;
+        window.process = { env: { NODE_ENV: 'production' }, nextTick: (cb) => setTimeout(cb, 0) };
+        
+        console.log("Environment Polyfills Loaded");
     </script>
 <script type="importmap">
 {
@@ -78,6 +83,7 @@
 </head>
 <body>
     <div id="root"></div>
-    <script type="module" src="index.tsx"></script>
+    <!-- Use explicit relative path for entry point -->
+    <script type="module" src="./index.tsx"></script>
 </body>
 </html>
