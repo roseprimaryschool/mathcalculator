@@ -17,40 +17,38 @@ const App: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [lobby, setLobby] = useState<LobbyType>('Class');
   const [gunInstance, setGunInstance] = useState<any>(null);
-  const [initError, setInitError] = useState<string | null>(null);
+  const [gunStatus, setGunStatus] = useState<'connecting' | 'online' | 'error'>('connecting');
 
   useEffect(() => {
     let gun: any;
     try {
-      console.log("Initializing Gun Secure Protocol...");
+      console.log("System: Establishing Mesh Connection...");
       
-      // Initialize Gun with explicit peer set
       gun = Gun({ 
         peers: GUN_PEERS,
         localStorage: true,
-        radisk: false // Disable radisk on mobile to improve stability
+        radisk: false 
       });
       
       setGunInstance(gun);
       
-      // Safe user check
       const gunUser = gun.user();
       if (gunUser && gunUser.is) {
         setUser(gunUser);
       }
       
-      console.log("Gun Protocol Online.");
+      setGunStatus('online');
     } catch (e) {
-      console.error("Failed to initialize Gun:", e);
-      setInitError(String(e));
+      console.error("Gun Error:", e);
+      setGunStatus('error');
     }
-
-    return () => {
-      // Cleanup if needed
-    };
   }, []);
 
   const handleUnlock = () => {
+    if (gunStatus === 'error') {
+      alert("CRITICAL: Decentralized matrix unreachable. Chat currently offline.");
+      return;
+    }
     setView('auth');
   };
 
@@ -63,31 +61,22 @@ const App: React.FC = () => {
   const handleLogout = () => {
     if (gunInstance) {
       const gunUser = gunInstance.user();
-      if (gunUser && gunUser.leave) gunUser.leave();
+      if (gunUser?.leave) gunUser.leave();
     }
     setUser(null);
     setView('calculator');
   };
 
-  if (initError) {
-    return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-slate-950 text-slate-500">
-        <div className="mono text-[10px] uppercase mb-2">Protocol_Initialization_Error</div>
-        <div className="mono text-[8px] opacity-50 break-all max-w-xs text-center">{initError}</div>
-      </div>
-    );
-  }
-
-  if (!gunInstance) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center p-4 bg-slate-950 text-slate-200">
-        <div className="mono text-[10px] animate-pulse">CONNECTING_TO_NODES...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-slate-950 text-slate-200">
+      {/* Background status indicator */}
+      <div className="fixed top-4 right-4 flex items-center gap-2 opacity-20 pointer-events-none">
+        <div className={`w-1.5 h-1.5 rounded-full ${gunStatus === 'online' ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`}></div>
+        <span className="mono text-[8px] uppercase tracking-tighter">
+          {gunStatus === 'online' ? 'Mesh_Linked' : 'Mesh_Error'}
+        </span>
+      </div>
+
       {view === 'calculator' && (
         <div className="w-full max-w-md animate-fade-in">
           <Calculator onTrigger={handleUnlock} />
